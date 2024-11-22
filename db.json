@@ -16,7 +16,7 @@
     {
       "id": "BUS-3",
       "title": "Develop business strategy",
-      "status": "todo",
+      "status": "in-progress",
       "priority": "high",
       "points": 3
     },
@@ -30,7 +30,7 @@
     {
       "id": "BUS-5",
       "title": "Negotiate partnerships",
-      "status": "todo",
+      "status": "in-progress",
       "priority": "low",
       "points": 1
     },
@@ -44,7 +44,7 @@
     {
       "id": "BUS-7",
       "title": "Implement marketing plan",
-      "status": "in-progress",
+      "status": "todo",
       "priority": "high",
       "points": 8
     },
