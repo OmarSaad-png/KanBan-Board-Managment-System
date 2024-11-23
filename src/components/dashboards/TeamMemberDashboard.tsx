@@ -3,6 +3,7 @@ import { Task } from '../../utils/data-tasks';
 import { User } from '../../utils/auth-types';
 import KanbanBoard from '../KanbanBoard';
 import Header from '../common/Header';
+import CalendarModal from '../modals/CalendarModal';
 
 interface TeamMemberDashboardProps {
   user: User;
@@ -20,6 +21,7 @@ export default function TeamMemberDashboard({
   onTaskUpdate 
 }: TeamMemberDashboardProps) {
   const [tasks] = useState(initialTasks);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   return (
     <div className="flex flex-col h-screen">
@@ -27,6 +29,7 @@ export default function TeamMemberDashboard({
         title="Team Member Dashboard" 
         userName={user.name}
         onLogout={onLogout}
+        onCalendarClick={() => setShowCalendar(true)}
       >
         <div className="flex items-center gap-4">
           <div className="text-sm">
@@ -44,6 +47,15 @@ export default function TeamMemberDashboard({
           onTaskUpdate={onTaskUpdate}
         />
       </main>
+
+      {showCalendar && (
+        <CalendarModal
+          onClose={() => setShowCalendar(false)}
+          tasks={tasks}
+          user={user}
+          users={users}
+        />
+      )}
     </div>
   );
 } 

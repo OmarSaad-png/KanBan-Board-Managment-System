@@ -8,7 +8,8 @@
       "points": 1,
       "assignee": "2",
       "clientId": "4",
-      "createdBy": "1"
+      "createdBy": "1",
+      "dueDate": "2024-12-07"
     },
     {
       "id": "BUS-2",
@@ -19,7 +20,8 @@
       "assignee": "2",
       "clientId": "4",
       "createdBy": "1",
-      "completedAt": "2024-11-23T01:15:00.711Z"
+      "completedAt": "2024-11-23T01:15:00.711Z",
+      "dueDate": "2024-11-30"
     },
     {
       "id": "BUS-3",
@@ -29,7 +31,8 @@
       "points": 3,
       "assignee": "3",
       "clientId": "4",
-      "createdBy": "1"
+      "createdBy": "1",
+      "dueDate": "2024-11-26"
     },
     {
       "id": "BUS-4",
@@ -39,7 +42,8 @@
       "points": 2,
       "assignee": "2",
       "clientId": "5",
-      "createdBy": "1"
+      "createdBy": "1",
+      "dueDate": "2024-12-07"
     },
     {
       "id": "BUS-5",
@@ -49,7 +53,8 @@
       "points": 1,
       "assignee": "3",
       "clientId": "5",
-      "createdBy": "1"
+      "createdBy": "1",
+      "dueDate": "2024-12-07"
     },
     {
       "id": "BUS-6",
@@ -61,7 +66,8 @@
       "clientId": "4",
       "createdBy": "1",
       "completedAt": "2024-11-23T15:13:58.917Z",
-      "approvalStatus": "rejected"
+      "approvalStatus": "rejected",
+      "dueDate": "2024-11-30"
     },
     {
       "id": "BUS-7",
@@ -71,7 +77,8 @@
       "points": 8,
       "assignee": "3",
       "clientId": "4",
-      "createdBy": "1"
+      "createdBy": "1",
+      "dueDate": "2024-11-26"
     },
     {
       "id": "BUS-8",
@@ -81,7 +88,8 @@
       "points": 3,
       "assignee": "2",
       "clientId": "5",
-      "createdBy": "1"
+      "createdBy": "1",
+      "dueDate": "2024-12-07"
     },
     {
       "id": "BUS-9",
@@ -93,7 +101,8 @@
       "clientId": "4",
       "createdBy": "1",
       "completedAt": "2024-11-23T10:39:55.152Z",
-      "approvalStatus": "approved"
+      "approvalStatus": "approved",
+      "dueDate": "2024-11-26"
     },
     {
       "id": "9f97",
@@ -105,7 +114,8 @@
       "clientId": "5",
       "createdBy": "1",
       "completedAt": "2024-11-23T11:09:18.986Z",
-      "approvalStatus": "approved"
+      "approvalStatus": "approved",
+      "dueDate": "2024-12-07"
     },
     {
       "id": "BUS-11",
@@ -117,7 +127,8 @@
       "clientId": "4",
       "createdBy": "1",
       "completedAt": "2024-11-23T12:52:01.889Z",
-      "approvalStatus": "approved"
+      "approvalStatus": "approved",
+      "dueDate": "2024-12-07"
     },
     {
       "id": "BUS-12",
@@ -129,7 +140,8 @@
       "clientId": "5",
       "createdBy": "1",
       "completedAt": "2024-11-23T13:19:31.625Z",
-      "approvalStatus": "approved"
+      "approvalStatus": "approved",
+      "dueDate": "2024-11-26"
     },
     {
       "id": "BUS-13",
@@ -141,7 +153,8 @@
       "clientId": "5",
       "createdBy": "1",
       "completedAt": "2024-11-23T13:37:45.445Z",
-      "approvalStatus": "rejected"
+      "approvalStatus": "rejected",
+      "dueDate": "2024-12-07"
     }
   ],
   "users": [

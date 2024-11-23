@@ -7,6 +7,7 @@ import NewTaskModal from '../modals/NewTaskModal';
 import KPIDashboard from '../KPIDashboard';
 import { approveTaskWithKPI } from '../../utils/api';
 import { toast } from 'react-hot-toast';
+import CalendarModal from '../modals/CalendarModal';
 
 interface TeamLeaderDashboardProps {
   user: User;
@@ -29,6 +30,7 @@ export default function TeamLeaderDashboard({
 }: TeamLeaderDashboardProps) {
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
   const [kpiRefreshCounter, setKpiRefreshCounter] = useState(0);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   const teamMembers = users.filter(u => u.role === 'team_member');
   const clients = users.filter(u => u.role === 'client');
@@ -59,6 +61,7 @@ export default function TeamLeaderDashboard({
         title="Team Leader Dashboard" 
         userName={user.name}
         onLogout={onLogout}
+        onCalendarClick={() => setShowCalendar(true)}
       >
         <button
           onClick={() => setShowNewTaskModal(true)}
@@ -97,6 +100,15 @@ export default function TeamLeaderDashboard({
           clients={clients}
           currentUser={user}
           availableTasks={tasks}
+        />
+      )}
+
+      {showCalendar && (
+        <CalendarModal
+          onClose={() => setShowCalendar(false)}
+          tasks={tasks}
+          user={user}
+          users={users}
         />
       )}
     </div>

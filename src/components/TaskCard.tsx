@@ -196,7 +196,7 @@ const TaskCard = ({ task, onDelete, onApprove, onReject, user, assignee, client,
           </div>
         )}
 
-        {task.dueDate && (
+        {task.dueDate && !(task.status === 'done' && task.approvalStatus === 'approved') && (
           <div className={`mt-2 text-sm ${
             getDaysRemaining(task.dueDate) <= 1 ? 'text-red-600' : 'text-gray-600'
           }`}>
