@@ -157,6 +157,18 @@
       "completedAt": "2024-11-23T13:37:45.445Z",
       "approvalStatus": "rejected",
       "dueDate": "2024-12-07"
+    },
+    {
+      "id": "BUS-14",
+      "title": "Provide Functional Requirements",
+      "priority": "high",
+      "points": 3,
+      "status": "todo",
+      "assignee": "2",
+      "clientId": "4",
+      "createdBy": "1",
+      "dependsOn": "BUS-13",
+      "dueDate": "2024-11-26T22:33:15.090Z"
     }
   ],
   "users": [
