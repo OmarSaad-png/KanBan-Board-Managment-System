@@ -3,7 +3,6 @@ import { Task } from '../../utils/data-tasks';
 import { User } from '../../utils/auth-types';
 import KanbanBoard from '../KanbanBoard';
 import Header from '../common/Header';
-import { updateTaskAPI } from '../../utils/api';
 
 interface TeamMemberDashboardProps {
   user: User;

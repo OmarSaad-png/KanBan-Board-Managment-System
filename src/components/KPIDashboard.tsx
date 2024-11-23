@@ -6,16 +6,17 @@ import Loading from './common/Loading';
 
 interface KPIDashboardProps {
   teamMembers: User[];
+  refreshTrigger?: number;
 }
 
-export default function KPIDashboard({ teamMembers }: KPIDashboardProps) {
+export default function KPIDashboard({ teamMembers, refreshTrigger }: KPIDashboardProps) {
   const [kpiRecords, setKpiRecords] = useState<KPIRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadKPIRecords();
-  }, []);
+  }, [refreshTrigger]);
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:3001');

@@ -54,12 +54,14 @@
     {
       "id": "BUS-6",
       "title": "Develop marketing plan",
-      "status": "todo",
+      "status": "in-progress",
       "priority": "high",
       "points": 13,
       "assignee": "2",
       "clientId": "4",
-      "createdBy": "1"
+      "createdBy": "1",
+      "completedAt": "2024-11-23T15:13:58.917Z",
+      "approvalStatus": "rejected"
     },
     {
       "id": "BUS-7",
@@ -106,16 +108,40 @@
       "approvalStatus": "approved"
     },
     {
-      "id": "BUS-10",
-      "title": "test",
+      "id": "BUS-11",
+      "title": "dep",
       "priority": "medium",
       "points": 1,
       "status": "done",
-      "assignee": "2",
+      "assignee": "3",
       "clientId": "4",
       "createdBy": "1",
-      "completedAt": "2024-11-23T12:26:28.141Z",
+      "completedAt": "2024-11-23T12:52:01.889Z",
       "approvalStatus": "approved"
+    },
+    {
+      "id": "BUS-12",
+      "title": "New Application Function",
+      "priority": "high",
+      "points": 6,
+      "status": "done",
+      "assignee": "2",
+      "clientId": "5",
+      "createdBy": "1",
+      "completedAt": "2024-11-23T13:19:31.625Z",
+      "approvalStatus": "approved"
+    },
+    {
+      "id": "BUS-13",
+      "title": "Provide Business Proposal",
+      "priority": "low",
+      "points": 1,
+      "status": "in-progress",
+      "assignee": "3",
+      "clientId": "5",
+      "createdBy": "1",
+      "completedAt": "2024-11-23T13:37:45.445Z",
+      "approvalStatus": "rejected"
     }
   ],
   "users": [
@@ -191,10 +217,26 @@
     {
       "id": "2ed5",
       "userId": "2",
-      "taskId": "BUS-10",
+      "taskId": null,
       "points": 1,
       "completedAt": "2024-11-23T12:26:28.141Z",
       "approvedAt": "2024-11-23T12:26:38.769Z"
+    },
+    {
+      "id": "d559",
+      "userId": "3",
+      "taskId": "BUS-11",
+      "points": 1,
+      "completedAt": "2024-11-23T12:52:01.889Z",
+      "approvedAt": "2024-11-23T12:52:12.154Z"
+    },
+    {
+      "id": "eb41",
+      "userId": "2",
+      "taskId": "BUS-12",
+      "points": 6,
+      "completedAt": "2024-11-23T13:19:31.625Z",
+      "approvedAt": "2024-11-23T13:19:44.473Z"
     }
   ]
 }

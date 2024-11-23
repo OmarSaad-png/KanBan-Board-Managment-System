@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Task, Priority } from '../utils/data-tasks'
 import { User } from '../utils/auth-types'
 
@@ -11,6 +11,7 @@ interface TaskCardProps {
   onTaskUpdate: (task: Task) => Promise<void>;
   onApprove?: (task: Task) => Promise<void>;
   onReject?: (task: Task) => Promise<void>;
+  tasks: Task[];
 }
 
 const priorityColors = {
@@ -19,12 +20,31 @@ const priorityColors = {
   high: 'bg-red-100 text-red-800',
 } as const satisfies Record<Priority, string>;
 
-const TaskCard = ({ task, onDelete, onApprove, onReject, user, assignee, client }: TaskCardProps) => {
+const getDaysRemaining = (dueDate: string): number => {
+  const today = new Date();
+  const due = new Date(dueDate);
+  const diffTime = due.getTime() - today.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
+
+const TaskCard = ({ task, onDelete, onApprove, onReject, user, assignee, client, tasks }: TaskCardProps) => {
   const [isDragging, setIsDragging] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isFlashing, setIsFlashing] = useState(false);
 
-  // Only team members can drag their own tasks
-  const canDrag = user.role === 'team_member' && task.assignee === user.id;
+  useEffect(() => {
+    if (task.approvalStatus === 'rejected') {
+      setIsFlashing(true);
+      const timer = setTimeout(() => setIsFlashing(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [task.approvalStatus]);
+
+  const dependentTask = task.dependsOn ? tasks.find(t => t.id === task.dependsOn) : null;
+  const canDrag = user.role === 'team_member' && 
+    task.assignee === user.id && 
+    task.approvalStatus !== 'approved' && 
+    (!task.dependsOn || (dependentTask?.status === 'done' && dependentTask?.approvalStatus === 'approved'));
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     if (!canDrag) return;
@@ -76,8 +96,9 @@ const TaskCard = ({ task, onDelete, onApprove, onReject, user, assignee, client 
         onDragEnd={handleDragEnd}
         className={`
           p-4 mb-3 rounded-lg shadow-sm border border-gray-200
-          bg-white ${canDrag ? 'cursor-move' : 'cursor-default'} 
+          bg-white ${canDrag ? 'cursor-move' : 'cursor-not-allowed'} 
           ${isDragging ? 'opacity-50' : 'opacity-100'}
+          ${isFlashing ? 'animate-flash' : ''}
           hover:shadow-md
         `}
         role="article"
@@ -85,6 +106,11 @@ const TaskCard = ({ task, onDelete, onApprove, onReject, user, assignee, client 
       >
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-gray-500 font-mono">{task.id}</span>
+          {user.role === 'team_member' && task.status === 'pending' && (
+            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">
+              Pending Approval
+            </span>
+          )}
           <span 
             className={`
               px-2 py-1 rounded-full text-xs font-semibold
@@ -153,6 +179,28 @@ const TaskCard = ({ task, onDelete, onApprove, onReject, user, assignee, client 
             >
               Reject
             </button>
+          </div>
+        )}
+
+        {/* Update the dependency info section */}
+        {task.dependsOn && (
+          <div className="mt-2 text-sm text-gray-500">
+            Depends on: {task.dependsOn}
+            {dependentTask && (
+              <span className="ml-2">
+                {dependentTask.status === 'done' && dependentTask.approvalStatus === 'approved' 
+                  ? '(Completed)'
+                  : '(Waiting for dependent task completion)'}
+              </span>
+            )}
+          </div>
+        )}
+
+        {task.dueDate && (
+          <div className={`mt-2 text-sm ${
+            getDaysRemaining(task.dueDate) <= 1 ? 'text-red-600' : 'text-gray-600'
+          }`}>
+            Due in: {getDaysRemaining(task.dueDate)} days
           </div>
         )}
       </div>

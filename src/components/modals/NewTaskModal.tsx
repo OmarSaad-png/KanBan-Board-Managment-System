@@ -8,6 +8,7 @@ interface NewTaskModalProps {
   teamMembers: User[];
   clients: { id: string; name: string; }[];
   currentUser: User;
+  availableTasks: Task[];
 }
 
 interface FormErrors {
@@ -15,12 +16,29 @@ interface FormErrors {
   points?: string;
 }
 
+const calculateDueDate = (priority: Priority): string => {
+  const today = new Date();
+  switch (priority) {
+    case 'high':
+      today.setDate(today.getDate() + 3); // 3 days for high priority
+      break;
+    case 'medium':
+      today.setDate(today.getDate() + 7); // 7 days for medium priority
+      break;
+    case 'low':
+      today.setDate(today.getDate() + 14); // 14 days for low priority
+      break;
+  }
+  return today.toISOString();
+};
+
 export default function NewTaskModal({ 
   onClose, 
   onSubmit, 
   teamMembers, 
   clients,
-  currentUser 
+  currentUser,
+  availableTasks 
 }: NewTaskModalProps) {
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<Priority>('medium');
@@ -29,6 +47,7 @@ export default function NewTaskModal({
   const [clientId, setClientId] = useState<string>(clients[0]?.id || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [dependsOn, setDependsOn] = useState<string>('');
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -51,6 +70,13 @@ export default function NewTaskModal({
     return Object.keys(newErrors).length === 0;
   };
 
+  // Get incomplete tasks for the selected assignee
+  const incompleteTasks = availableTasks.filter(task => 
+    task.assignee === assignee && 
+    task.status !== 'done' &&
+    !task.approvalStatus
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -67,7 +93,9 @@ export default function NewTaskModal({
         status: 'todo',
         assignee,
         clientId,
-        createdBy: currentUser.id
+        createdBy: currentUser.id,
+        dependsOn: dependsOn || undefined,
+        dueDate: calculateDueDate(priority)
       });
       onClose();
     } catch (error) {
@@ -162,6 +190,24 @@ export default function NewTaskModal({
               {clients.map(client => (
                 <option key={client.id} value={client.id}>
                   {client.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Depends On (Optional)
+            </label>
+            <select
+              value={dependsOn}
+              onChange={(e) => setDependsOn(e.target.value)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="">No Dependency</option>
+              {incompleteTasks.map(task => (
+                <option key={task.id} value={task.id}>
+                  {task.id} - {task.title}
                 </option>
               ))}
             </select>

@@ -28,6 +28,7 @@ export default function TeamLeaderDashboard({
   onTaskDelete
 }: TeamLeaderDashboardProps) {
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
+  const [kpiRefreshCounter, setKpiRefreshCounter] = useState(0);
 
   const teamMembers = users.filter(u => u.role === 'team_member');
   const clients = users.filter(u => u.role === 'client');
@@ -36,8 +37,7 @@ export default function TeamLeaderDashboard({
     try {
       const { task: updatedTask } = await approveTaskWithKPI(task);
       await onTaskUpdate(updatedTask);
-      
-      // Optionally show success notification
+      setKpiRefreshCounter(prev => prev + 1);
       toast.success(`Task "${task.title}" approved successfully`);
     } catch (error) {
       console.error('Failed to approve task:', error);
@@ -82,7 +82,10 @@ export default function TeamLeaderDashboard({
           />
         </div>
         <div className="w-80 border-l overflow-auto">
-          <KPIDashboard teamMembers={teamMembers} />
+          <KPIDashboard 
+            teamMembers={teamMembers} 
+            refreshTrigger={kpiRefreshCounter}
+          />
         </div>
       </div>
 
@@ -93,6 +96,7 @@ export default function TeamLeaderDashboard({
           teamMembers={teamMembers}
           clients={clients}
           currentUser={user}
+          availableTasks={tasks}
         />
       )}
     </div>

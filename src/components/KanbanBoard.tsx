@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Task, Status, statuses, leaderStatuses } from '../utils/data-tasks';
+import { Task, Status, leaderStatuses, memberStatuses } from '../utils/data-tasks';
 import { User } from '../utils/auth-types';
 import TaskCard from './TaskCard';
 
@@ -32,12 +32,28 @@ export default function KanbanBoard({
   }, [initialTasks]);
 
   // Use different status arrays based on user role
-  const visibleStatuses = user.role === 'team_leader' ? leaderStatuses : statuses;
+  const visibleStatuses = user.role === 'team_leader' ? leaderStatuses : memberStatuses;
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const status = e.currentTarget.dataset.status as Status;
     setDraggingOver(status);
+  };
+
+  const canMoveTask = (task: Task): boolean => {
+    if (user.role === 'team_member') {
+      // Don't allow moving approved tasks
+      if (task.approvalStatus === 'approved') return false;
+      
+      // If task has dependency, check if it's completed and approved
+      if (task.dependsOn) {
+        const dependentTask = tasks.find(t => t.id === task.dependsOn);
+        if (!dependentTask) return true; // If dependent task not found, allow move
+        return dependentTask.status === 'done' && dependentTask.approvalStatus === 'approved';
+      }
+      return true;
+    }
+    return true;
   };
 
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>, status: Status) => {
@@ -47,7 +63,7 @@ export default function KanbanBoard({
     const taskId = e.dataTransfer.getData('id');
     const task = tasks.find(t => t.id === taskId);
     
-    if (!task || task.status === status) return;
+    if (!task || task.status === status || !canMoveTask(task)) return;
     
     setIsUpdating(true);
     try {
@@ -78,10 +94,17 @@ export default function KanbanBoard({
 
   const getColumnTasks = useCallback((status: Status) => {
     if (user.role === 'team_member') {
+      // For team members, show pending tasks in the 'done' column
+      if (status === 'done') {
+        return tasks.filter(task => 
+          task.assignee === user.id && 
+          (task.status === 'done' || task.status === 'pending')
+        );
+      }
+      
       return tasks.filter(task => 
         task.assignee === user.id && 
-        task.status === status &&
-        task.approvalStatus !== 'approved'
+        task.status === status
       );
     }
     
@@ -125,6 +148,7 @@ export default function KanbanBoard({
               <TaskCard
                 key={task.id}
                 task={task}
+                tasks={tasks}
                 user={user}
                 onTaskUpdate={onTaskUpdate}
                 onApprove={onTaskApprove}

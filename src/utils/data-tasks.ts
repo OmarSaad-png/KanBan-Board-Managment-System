@@ -2,6 +2,7 @@ export type Status = 'todo' | 'in-progress' | 'done' | 'pending'
 export type Priority = 'low' | 'medium' | 'high'
 export const statuses: Status[] = ['todo', 'in-progress', 'done', 'pending']
 export const leaderStatuses: Status[] = ['todo', 'in-progress', 'done', 'pending']
+export const memberStatuses: Status[] = ['todo', 'in-progress', 'done']
 
 export interface Task {
   id: string
@@ -14,6 +15,8 @@ export interface Task {
   createdBy: string
   completedAt?: string
   approvalStatus?: 'pending' | 'approved' | 'rejected'
+  dependsOn?: string
+  dueDate: string
 }
 
 export interface Column {
