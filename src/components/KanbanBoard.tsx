@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Task, Status, statuses, leaderStatuses } from '../utils/data-tasks';
 import { User } from '../utils/auth-types';
 import TaskCard from './TaskCard';
@@ -10,17 +10,26 @@ interface KanbanBoardProps {
   onTaskUpdate: (task: Task) => Promise<void>;
   onTaskApprove?: (task: Task) => Promise<void>;
   onTaskReject?: (task: Task) => Promise<void>;
+  onTaskDelete?: (taskId: string) => Promise<void>;
 }
 
 export default function KanbanBoard({ 
-  tasks, 
+  tasks: initialTasks, 
   user, 
   users, 
   onTaskUpdate,
   onTaskApprove,
-  onTaskReject
+  onTaskReject,
+  onTaskDelete
 }: KanbanBoardProps) {
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [draggingOver, setDraggingOver] = useState<Status | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Update local tasks when prop changes
+  useEffect(() => {
+    setTasks(initialTasks);
+  }, [initialTasks]);
 
   // Use different status arrays based on user role
   const visibleStatuses = user.role === 'team_leader' ? leaderStatuses : statuses;
@@ -33,11 +42,14 @@ export default function KanbanBoard({
 
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>, status: Status) => {
     e.preventDefault();
+    if (isUpdating) return;
+
     const taskId = e.dataTransfer.getData('id');
     const task = tasks.find(t => t.id === taskId);
     
     if (!task || task.status === status) return;
     
+    setIsUpdating(true);
     try {
       const updatedTask = { 
         ...task, 
@@ -45,30 +57,48 @@ export default function KanbanBoard({
         completedAt: status === 'done' ? new Date().toISOString() : task.completedAt
       };
 
+      // Update local state immediately
+      setTasks(prevTasks => 
+        prevTasks.map(t => t.id === taskId ? updatedTask : t)
+      );
+
+      // Call API to update backend
       await onTaskUpdate(updatedTask);
     } catch (error) {
+      // Revert local state if API call fails
+      setTasks(prevTasks => 
+        prevTasks.map(t => t.id === taskId ? task : t)
+      );
       console.error('Failed to update task:', error);
+    } finally {
+      setIsUpdating(false);
+      setDraggingOver(null);
     }
-    setDraggingOver(null);
   };
 
-  const getColumnTasks = (status: Status) => {
-    // For team members, show 'pending' tasks as 'done'
-    if (user.role !== 'team_leader') {
-      if (status === 'done') {
-        return tasks.filter(task => 
-          task.status === 'done' || task.status === 'pending'
-        );
-      }
+  const getColumnTasks = useCallback((status: Status) => {
+    if (user.role === 'team_member') {
+      return tasks.filter(task => 
+        task.assignee === user.id && 
+        task.status === status &&
+        task.approvalStatus !== 'approved'
+      );
+    }
+    
+    if (user.role === 'team_leader') {
       return tasks.filter(task => task.status === status);
     }
-    return tasks.filter(task => task.status === status);
-  };
+    
+    return tasks.filter(task => 
+      task.clientId === user.id && 
+      task.status === status
+    );
+  }, [tasks, user.role, user.id]);
 
-  const findUser = (userId?: string) => {
+  const findUser = useCallback((userId?: string) => {
     if (!userId) return undefined;
     return users.find(u => u.id === userId);
-  };
+  }, [users]);
 
   return (
     <div className="flex flex-1 gap-4 p-4 overflow-x-auto">
@@ -99,6 +129,7 @@ export default function KanbanBoard({
                 onTaskUpdate={onTaskUpdate}
                 onApprove={onTaskApprove}
                 onReject={onTaskReject}
+                onDelete={onTaskDelete}
                 assignee={findUser(task.assignee)}
                 client={findUser(task.clientId)}
               />

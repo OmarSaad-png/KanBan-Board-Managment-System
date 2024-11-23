@@ -10,6 +10,11 @@ interface NewTaskModalProps {
   currentUser: User;
 }
 
+interface FormErrors {
+  title?: string;
+  points?: string;
+}
+
 export default function NewTaskModal({ 
   onClose, 
   onSubmit, 
@@ -23,9 +28,36 @@ export default function NewTaskModal({
   const [assignee, setAssignee] = useState<string>(teamMembers[0]?.id || '');
   const [clientId, setClientId] = useState<string>(clients[0]?.id || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    // Title validation
+    if (!title.trim()) {
+      newErrors.title = 'Title is required';
+    } else if (title.length < 3) {
+      newErrors.title = 'Title must be at least 3 characters';
+    } else if (title.length > 50) {
+      newErrors.title = 'Title must be less than 50 characters';
+    }
+
+    // Points validation
+    if (points < 1 || points > 13) {
+      newErrors.points = 'Points must be between 1 and 13';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await onSubmit({
@@ -55,10 +87,20 @@ export default function NewTaskModal({
             <input
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              onChange={(e) => {
+                setTitle(e.target.value);
+                // Clear error when user starts typing
+                if (errors.title) {
+                  setErrors(prev => ({ ...prev, title: undefined }));
+                }
+              }}
+              className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500
+                ${errors.title ? 'border-red-500' : 'border-gray-300'}`}
               required
             />
+            {errors.title && (
+              <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+            )}
           </div>
 
           <div>
@@ -81,9 +123,18 @@ export default function NewTaskModal({
               min="1"
               max="13"
               value={points}
-              onChange={(e) => setPoints(Number(e.target.value))}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              onChange={(e) => {
+                setPoints(Number(e.target.value));
+                if (errors.points) {
+                  setErrors(prev => ({ ...prev, points: undefined }));
+                }
+              }}
+              className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500
+                ${errors.points ? 'border-red-500' : 'border-gray-300'}`}
             />
+            {errors.points && (
+              <p className="mt-1 text-sm text-red-600">{errors.points}</p>
+            )}
           </div>
 
           <div>

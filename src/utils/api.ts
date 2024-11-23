@@ -4,7 +4,6 @@ const API_BASE_URL = 'http://localhost:3000';
 import { Task } from './data-tasks';
 import { User } from './auth-types';
 import { KPIRecord } from './data-tasks';
-import { CalendarEvent } from './calendar-types';
 
 const fetchWithTimeout = async (url: string, options: RequestInit = {}) => {
   const controller = new AbortController();
@@ -42,16 +41,46 @@ export async function updateTaskAPI(task: Task): Promise<Task> {
     },
     body: JSON.stringify(task),
   });
+
+}
+// Add this function to get the next task number
+async function getNextTaskNumber(): Promise<number> {
+  try {
+    const tasks = await fetchTasks();
+    const taskNumbers = tasks
+      .map(task => {
+        const match = task.id.match(/BUS-(\d+)/);
+        return match ? parseInt(match[1], 10) : 0;
+      })
+      .filter(num => !isNaN(num));
+
+    return taskNumbers.length > 0 ? Math.max(...taskNumbers) + 1 : 1;
+  } catch (error) {
+    console.error('Error getting next task number:', error);
+    return 1; // Fallback to starting from 1 if there's an error
+  }
 }
 
+// Update the task ID generation function
+async function generateTaskId(): Promise<string> {
+  const nextNumber = await getNextTaskNumber();
+  return `BUS-${nextNumber}`;
+}
+
+// Update createTask to handle async ID generation
 export async function createTask(taskData: Omit<Task, 'id'>): Promise<Task> {
   try {
+    const taskWithId = {
+      ...taskData,
+      id: await generateTaskId()
+    };
+
     const response = await fetch(`${API_BASE_URL}/tasks`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(taskData),
+      body: JSON.stringify(taskWithId),
     });
     
     if (!response.ok) {
@@ -64,16 +93,17 @@ export async function createTask(taskData: Omit<Task, 'id'>): Promise<Task> {
   }
 }
 
+// Simplify error handling with a reusable wrapper
+const handleApiError = (error: unknown, message: string): never => {
+  throw new Error(`${message}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+};
+
 export async function fetchUsers(): Promise<User[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/users`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data;
+    const response = await fetchWithTimeout(`${API_BASE_URL}/users`);
+    return response;
   } catch (error) {
-    throw new Error(`Failed to fetch users: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    return handleApiError(error, 'Failed to fetch users');
   }
 }
 
@@ -123,26 +153,40 @@ export async function addKPIRecord(record: Omit<KPIRecord, 'id'>): Promise<KPIRe
   }
 }
 
-export async function fetchCalendarEvents(): Promise<CalendarEvent[]> {
-  return fetchWithTimeout(`${API_BASE_URL}/calendar-events`);
+
+
+
+
+export interface TaskApprovalData {
+  taskId: string;
+  userId: string;
+  points: number;
+  completedAt: string;
 }
 
-export async function createCalendarEvent(event: Omit<CalendarEvent, 'id'>): Promise<CalendarEvent> {
-  return fetchWithTimeout(`${API_BASE_URL}/calendar-events`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(event),
-  });
-}
+// Add new function to handle the entire approval process
+export async function approveTaskWithKPI(task: Task): Promise<{ task: Task; kpi: KPIRecord }> {
+  try {
+    if (!task.assignee) {
+      throw new Error('Cannot approve task without assignee');
+    }
 
-export async function updateCalendarEvent(event: CalendarEvent): Promise<CalendarEvent> {
-  return fetchWithTimeout(`${API_BASE_URL}/calendar-events/${event.id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(event),
-  });
+    const updatedTask = await updateTaskAPI({
+      ...task,
+      status: 'done',
+      approvalStatus: 'approved'
+    });
+
+    const kpiRecord = await addKPIRecord({
+      userId: task.assignee,
+      taskId: task.id,
+      points: task.points,
+      completedAt: task.completedAt || new Date().toISOString(),
+      approvedAt: new Date().toISOString()
+    });
+
+    return { task: updatedTask, kpi: kpiRecord };
+  } catch (error) {
+    throw error;
+  }
 } 

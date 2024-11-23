@@ -4,7 +4,7 @@ export const users: User[] = [
   {
     id: '1',
     username: 'teamlead1',
-    password: 'leader123', // In real app, use hashed passwords
+    password: 'leader123',
     role: 'team_leader',
     name: 'John Leader'
   },

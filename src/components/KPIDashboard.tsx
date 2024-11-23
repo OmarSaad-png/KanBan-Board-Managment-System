@@ -17,6 +17,19 @@ export default function KPIDashboard({ teamMembers }: KPIDashboardProps) {
     loadKPIRecords();
   }, []);
 
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:3001');
+    
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'KPI_UPDATE') {
+        setKpiRecords(prevRecords => [...prevRecords, data.record]);
+      }
+    };
+
+    return () => ws.close();
+  }, []);
+
   const loadKPIRecords = async () => {
     try {
       const records = await fetchKPIRecords();
@@ -33,7 +46,10 @@ export default function KPIDashboard({ teamMembers }: KPIDashboardProps) {
     const memberRecords = kpiRecords.filter(record => record.userId === memberId);
     return {
       totalPoints: memberRecords.reduce((total, record) => total + record.points, 0),
-      completedTasks: memberRecords.length
+      completedTasks: memberRecords.length,
+      lastApproval: memberRecords.length > 0 
+        ? new Date(memberRecords[memberRecords.length - 1].approvedAt).toLocaleDateString()
+        : 'No approvals yet'
     };
   };
 
@@ -69,6 +85,9 @@ export default function KPIDashboard({ teamMembers }: KPIDashboardProps) {
                   <p className="text-sm text-gray-600">Tasks Completed</p>
                 </div>
               </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Last approval: {kpi.lastApproval}
+              </p>
             </div>
           );
         })}

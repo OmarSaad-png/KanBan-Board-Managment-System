@@ -5,6 +5,8 @@ import KanbanBoard from '../KanbanBoard';
 import Header from '../common/Header';
 import NewTaskModal from '../modals/NewTaskModal';
 import KPIDashboard from '../KPIDashboard';
+import { approveTaskWithKPI } from '../../utils/api';
+import { toast } from 'react-hot-toast';
 
 interface TeamLeaderDashboardProps {
   user: User;
@@ -31,11 +33,16 @@ export default function TeamLeaderDashboard({
   const clients = users.filter(u => u.role === 'client');
 
   const handleTaskApprove = async (task: Task) => {
-    await onTaskUpdate({
-      ...task,
-      status: 'done',
-      approvalStatus: 'approved'
-    });
+    try {
+      const { task: updatedTask } = await approveTaskWithKPI(task);
+      await onTaskUpdate(updatedTask);
+      
+      // Optionally show success notification
+      toast.success(`Task "${task.title}" approved successfully`);
+    } catch (error) {
+      console.error('Failed to approve task:', error);
+      toast.error('Failed to approve task');
+    }
   };
 
   const handleTaskReject = async (task: Task) => {
@@ -71,6 +78,7 @@ export default function TeamLeaderDashboard({
             onTaskUpdate={onTaskUpdate}
             onTaskApprove={handleTaskApprove}
             onTaskReject={handleTaskReject}
+            onTaskDelete={onTaskDelete}
           />
         </div>
         <div className="w-80 border-l overflow-auto">

@@ -15,32 +15,25 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadTasks = async () => {
+  const loadInitialData = async () => {
+    setIsLoading(true);
+    setError(null);
+    
     try {
-      const tasksData = await fetchTasks();
+      const [tasksData, usersData] = await Promise.all([
+        fetchTasks(),
+        fetchUsers()
+      ]);
       setTasks(tasksData);
+      setUsers(usersData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load tasks');
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    const loadInitialData = async () => {
-      setIsLoading(true);
-      try {
-        const [tasksData, usersData] = await Promise.all([
-          fetchTasks(),
-          fetchUsers()
-        ]);
-        setTasks(tasksData);
-        setUsers(usersData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     loadInitialData();
   }, []);
 
