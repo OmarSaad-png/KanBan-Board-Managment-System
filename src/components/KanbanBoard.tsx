@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Task, Status, leaderStatuses, memberStatuses } from '../utils/data-tasks';
 import { User } from '../utils/auth-types';
 import TaskCard from './TaskCard';
+import { Priority } from '../utils/data-tasks';
 
 interface KanbanBoardProps {
   tasks: Task[];
@@ -92,30 +93,29 @@ export default function KanbanBoard({
     }
   };
 
-  const getColumnTasks = useCallback((status: Status) => {
-    if (user.role === 'team_member') {
-      // For team members, show pending tasks in the 'done' column
-      if (status === 'done') {
-        return tasks.filter(task => 
+  const getTasksForStatus = useCallback((status: Status): Task[] => {
+    let filteredTasks = user.role === 'team_leader' 
+      ? tasks.filter(task => task.status === status)
+      : tasks.filter(task => 
           task.assignee === user.id && 
-          (task.status === 'done' || task.status === 'pending')
+          task.status === status
         );
-      }
+
+    // Sort tasks: rejected first, then by priority (high > medium > low)
+    return filteredTasks.sort((a, b) => {
+      // If one task is rejected and the other isn't, rejected goes first
+      if (a.approvalStatus === 'rejected' && b.approvalStatus !== 'rejected') return -1;
+      if (b.approvalStatus === 'rejected' && a.approvalStatus !== 'rejected') return 1;
       
-      return tasks.filter(task => 
-        task.assignee === user.id && 
-        task.status === status
-      );
-    }
-    
-    if (user.role === 'team_leader') {
-      return tasks.filter(task => task.status === status);
-    }
-    
-    return tasks.filter(task => 
-      task.clientId === user.id && 
-      task.status === status
-    );
+      // Otherwise sort by priority using type-safe priority mapping
+      const priorityOrder: Record<Priority, number> = {
+        high: 3,
+        medium: 2,
+        low: 1
+      };
+      
+      return priorityOrder[b.priority] - priorityOrder[a.priority];
+    });
   }, [tasks, user.role, user.id]);
 
   const findUser = useCallback((userId?: string) => {
@@ -139,12 +139,12 @@ export default function KanbanBoard({
               {status.replace('-', ' ')}
             </h2>
             <span className="px-2 py-1 text-sm bg-gray-200 rounded-full">
-              {getColumnTasks(status).length}
+              {getTasksForStatus(status).length}
             </span>
           </div>
 
           <div className="space-y-3">
-            {getColumnTasks(status).map(task => (
+            {getTasksForStatus(status).map(task => (
               <TaskCard
                 key={task.id}
                 task={task}

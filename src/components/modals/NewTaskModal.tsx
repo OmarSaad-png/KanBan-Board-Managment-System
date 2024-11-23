@@ -13,8 +13,18 @@ interface NewTaskModalProps {
 
 interface FormErrors {
   title?: string;
-  points?: string;
+  points?: number;
 }
+
+type StoryPoints = 1 | 2 | 3 | 5 | 8 | 13;
+
+const FIBONACCI_POINTS: StoryPoints[] = [1, 2, 3, 5, 8, 13];
+
+const PRIORITY_ORDER: Record<Priority, number> = {
+  high: 3,
+  medium: 2,
+  low: 1
+};
 
 const calculateDueDate = (priority: Priority): string => {
   const today = new Date();
@@ -42,7 +52,7 @@ export default function NewTaskModal({
 }: NewTaskModalProps) {
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<Priority>('medium');
-  const [points, setPoints] = useState<number>(1);
+  const [points, setPoints] = useState<StoryPoints>(1);
   const [assignee, setAssignee] = useState<string>(teamMembers[0]?.id || '');
   const [clientId, setClientId] = useState<string>(clients[0]?.id || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,21 +71,25 @@ export default function NewTaskModal({
       newErrors.title = 'Title must be less than 50 characters';
     }
 
-    // Points validation
-    if (points < 1 || points > 13) {
-      newErrors.points = 'Points must be between 1 and 13';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Get incomplete tasks for the selected assignee
-  const incompleteTasks = availableTasks.filter(task => 
-    task.assignee === assignee && 
-    task.status !== 'done' &&
-    !task.approvalStatus
-  );
+  // Get incomplete tasks for dependencies, sorted by priority
+  const incompleteTasks = availableTasks
+    .filter(task => 
+      task.status !== 'done' &&
+      task.approvalStatus !== 'approved'
+    )
+    .sort((a, b) => {
+      // Sort by priority
+      const priorityOrder: Record<Priority, number> = {
+        high: 3,
+        medium: 2,
+        low: 1
+      };
+      return priorityOrder[b.priority] - priorityOrder[a.priority];
+    });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,18 +98,27 @@ export default function NewTaskModal({
       return;
     }
 
+    // If there's a dependency, set priority at least as high as dependent task
+    let finalPriority = priority;
+    if (dependsOn) {
+      const dependentTask = availableTasks.find(t => t.id === dependsOn);
+      if (dependentTask && PRIORITY_ORDER[dependentTask.priority] > PRIORITY_ORDER[priority]) {
+        finalPriority = dependentTask.priority;
+      }
+    }
+
     setIsSubmitting(true);
     try {
       await onSubmit({
         title,
-        priority,
+        priority: finalPriority,
         points,
         status: 'todo',
         assignee,
         clientId,
         createdBy: currentUser.id,
         dependsOn: dependsOn || undefined,
-        dueDate: calculateDueDate(priority)
+        dueDate: calculateDueDate(finalPriority)
       });
       onClose();
     } catch (error) {
@@ -145,24 +168,38 @@ export default function NewTaskModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Points</label>
-            <input
-              type="number"
-              min="1"
-              max="13"
-              value={points}
-              onChange={(e) => {
-                setPoints(Number(e.target.value));
-                if (errors.points) {
-                  setErrors(prev => ({ ...prev, points: undefined }));
-                }
-              }}
-              className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500
-                ${errors.points ? 'border-red-500' : 'border-gray-300'}`}
-            />
-            {errors.points && (
-              <p className="mt-1 text-sm text-red-600">{errors.points}</p>
-            )}
+            <label className="block text-sm font-medium text-gray-700">Story Points</label>
+            <div className="mt-1 flex gap-2">
+              {FIBONACCI_POINTS.map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setPoints(value)}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors
+                    ${points === value 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+            <p className={`mt-1 text-s
+              ${points === 1 && 'text-green-600'}
+              ${points === 2 && 'text-green-700'} 
+              ${points === 3 && 'text-yellow-600'}
+              ${points === 5 && 'text-yellow-700'}
+              ${points === 8 && 'text-orange-600'}
+              ${points === 13 && 'text-red-600'}
+            `}>
+              {points === 1 && "Very simple task"}
+              {points === 2 && "Simple task"}
+              {points === 3 && "Medium task"}
+              {points === 5 && "Complex task"}
+              {points === 8 && "Very complex task"}
+              {points === 13 && "Extremely complex task"}
+            </p>
           </div>
 
           <div>

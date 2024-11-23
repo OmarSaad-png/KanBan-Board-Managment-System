@@ -1,27 +1,102 @@
-# React + TypeScript + Vite
+# React Kanban Board
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern task management system built with React, TypeScript, and WebSocket for real-time updates. This project implements a role-based Kanban board system with team collaboration features.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🔐 Role-based access control (Team Leader, Team Member, Client)
+- 📊 Real-time task updates using WebSocket
+- 📈 KPI tracking and performance dashboard
+- 💬 Real-time chat functionality
+- 📎 File attachments support
+- 📅 Task scheduling with priority-based due dates
+- ⛓️ Task dependencies management
+- ✅ Task approval workflow
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- React 18 with TypeScript
+- Tailwind CSS for styling
+- WebSocket for real-time communications
+- JSON Server for backend mock
+- Vite for build tooling
 
-- Configure the top-level `parserOptions` property like this:
+## Getting Started
 
-```js
-   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-   },
+1. Clone the repository:
+
+```bash
+git clone [your-repo-url]
+cd react-intro-kanban
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Start the development server:
+
+```bash
+npm run dev
+```
+
+4. Start the JSON server (in a separate terminal):
+
+```bash
+npm run server
+```
+
+## Available Scripts
+
+- `npm run dev` - Starts the development server
+- `npm run build` - Builds the app for production
+- `npm run lint` - Runs ESLint
+- `npm run preview` - Preview the production build
+- `npm run server` - Starts the JSON server for API mocking
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── common/
+│   ├── dashboards/
+│   ├── modals/
+│   └── chat/
+├── utils/
+├── App.tsx
+└── main.tsx
+```
+
+## User Roles
+
+### Team Leader
+- Create and assign tasks
+- Approve/reject completed tasks
+- View KPI dashboard
+- Manage team members
+
+### Team Member
+- Update task status
+- Upload attachments
+- Submit tasks for approval
+- Chat with team and clients
+
+### Client
+- View assigned tasks
+- Chat with team members
+- Track task progress
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
