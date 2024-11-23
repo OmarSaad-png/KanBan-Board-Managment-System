@@ -5,6 +5,7 @@ import { Task } from './data-tasks';
 import { User } from './auth-types';
 import { KPIRecord } from './data-tasks';
 import { Message } from './message-types';
+import { Attachment } from './data-tasks';
 
 const fetchWithTimeout = async (url: string, options: RequestInit = {}) => {
   const controller = new AbortController();
@@ -227,5 +228,84 @@ export async function saveMessage(message: Message): Promise<Message> {
     return response.json();
   } catch (error) {
     throw new Error(`Failed to save message: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+// Add attachment handling functions
+export async function uploadAttachment(taskId: string, file: File, userId: string): Promise<Attachment> {
+  try {
+    // In a real app, you'd upload to cloud storage here
+    // For this example, we'll just store metadata
+    const attachment: Attachment = {
+      id: Date.now().toString(),
+      taskId,
+      fileName: file.name,
+      uploadedBy: userId,
+      uploadedAt: new Date().toISOString(),
+      url: URL.createObjectURL(file) // In real app, this would be cloud storage URL
+    };
+
+    const response = await fetch(`${API_BASE_URL}/attachments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(attachment),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    throw new Error(`Failed to upload attachment: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+export async function fetchTaskAttachments(taskId: string): Promise<Attachment[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/attachments?taskId=${taskId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  } catch (error) {
+    throw new Error(`Failed to fetch attachments: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+// Add delete attachment function
+export async function deleteAttachment(attachmentId: string): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/attachments/${attachmentId}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // Cleanup the URL if it was created with createObjectURL
+    const attachment = await fetchAttachment(attachmentId);
+    if (attachment?.url.startsWith('blob:')) {
+      URL.revokeObjectURL(attachment.url);
+    }
+  } catch (error) {
+    throw new Error(`Failed to delete attachment: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+// Helper function to fetch a single attachment
+async function fetchAttachment(attachmentId: string): Promise<Attachment | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/attachments/${attachmentId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  } catch (error) {
+    console.error('Failed to fetch attachment:', error);
+    return null;
   }
 } 

@@ -79,7 +79,8 @@
       "clientId": "4",
       "createdBy": "1",
       "dueDate": "2024-11-26",
-      "dependsOn": "BUS-11"
+      "dependsOn": "BUS-11",
+      "attachments": []
     },
     {
       "id": "BUS-8",
@@ -282,6 +283,16 @@
       "receiverId": "1",
       "content": "Good Morning!",
       "timestamp": "2024-11-23T21:44:04.918Z"
+    }
+  ],
+  "attachments": [
+    {
+      "id": "1",
+      "taskId": "BUS-1",
+      "fileName": "requirements.pdf",
+      "uploadedBy": "2",
+      "uploadedAt": "2024-03-14T10:00:00.000Z",
+      "url": "/uploads/requirements.pdf"
     }
   ]
 }

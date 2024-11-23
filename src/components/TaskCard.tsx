@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Task, Priority } from '../utils/data-tasks'
+import { Task, Priority, Attachment } from '../utils/data-tasks'
 import { User } from '../utils/auth-types'
+import { uploadAttachment, fetchTaskAttachments, deleteAttachment } from '../utils/api'
+import AttachmentModal from '../components/modals/AttachmentModal'
 
 interface TaskCardProps {
   task: Task
@@ -27,10 +29,12 @@ const getDaysRemaining = (dueDate: string): number => {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
 
-const TaskCard = ({ task, onDelete, onApprove, onReject, user, assignee, client, tasks }: TaskCardProps) => {
+const TaskCard = ({ task, onDelete, onApprove, onReject, user, assignee, client, tasks, onTaskUpdate }: TaskCardProps) => {
   const [isDragging, setIsDragging] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isFlashing, setIsFlashing] = useState(false);
+  const [showAttachmentModal, setShowAttachmentModal] = useState(false);
+  const [attachments, setAttachments] = useState<Attachment[]>(task.attachments || []);
 
   useEffect(() => {
     if (task.approvalStatus === 'rejected') {
@@ -39,6 +43,51 @@ const TaskCard = ({ task, onDelete, onApprove, onReject, user, assignee, client,
       return () => clearTimeout(timer);
     }
   }, [task.approvalStatus]);
+
+  useEffect(() => {
+    loadAttachments();
+    
+    // Cleanup function to revoke object URLs when component unmounts
+    return () => {
+      attachments.forEach(attachment => {
+        if (attachment.url.startsWith('blob:')) {
+          URL.revokeObjectURL(attachment.url);
+        }
+      });
+    };
+  }, [task.id]);
+
+  const loadAttachments = async () => {
+    try {
+      const taskAttachments = await fetchTaskAttachments(task.id);
+      setAttachments(taskAttachments);
+    } catch (error) {
+      console.error('Failed to load attachments:', error);
+    }
+  };
+
+  const handleAttachmentUpload = async (file: File) => {
+    try {
+      const newAttachment = await uploadAttachment(task.id, file, user.id);
+      setAttachments(prev => [...prev, newAttachment]);
+      await onTaskUpdate({ ...task, attachments: [...attachments, newAttachment] });
+    } catch (error) {
+      console.error('Failed to upload attachment:', error);
+    }
+  };
+
+  const handleAttachmentDelete = async (attachmentId: string) => {
+    try {
+      await deleteAttachment(attachmentId);
+      setAttachments(prev => prev.filter(a => a.id !== attachmentId));
+      await onTaskUpdate({
+        ...task,
+        attachments: attachments.filter(a => a.id !== attachmentId)
+      });
+    } catch (error) {
+      console.error('Failed to delete attachment:', error);
+    }
+  };
 
   const dependentTask = task.dependsOn ? tasks.find(t => t.id === task.dependsOn) : null;
   const canDrag = user.role === 'team_member' && 
@@ -156,6 +205,40 @@ const TaskCard = ({ task, onDelete, onApprove, onReject, user, assignee, client,
               <span>Client: {client.name}</span>
             </div>
           )}
+          
+          <div className="mt-2">
+            <button
+              onClick={() => setShowAttachmentModal(true)}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              Add Attachment
+            </button>
+            {attachments.length > 0 && (
+              <div className="mt-2 space-y-1">
+                {attachments.map(attachment => (
+                  <div key={attachment.id} className="flex items-center justify-between">
+                    <a
+                      href={attachment.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-gray-600 hover:text-gray-800"
+                    >
+                      📎 {attachment.fileName}
+                    </a>
+                    {(user.id === attachment.uploadedBy || user.role === 'team_leader') && (
+                      <button
+                        onClick={() => handleAttachmentDelete(attachment.id)}
+                        className="text-red-500 hover:text-red-700 text-sm ml-2"
+                        title="Delete attachment"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center justify-between">
@@ -247,6 +330,13 @@ const TaskCard = ({ task, onDelete, onApprove, onReject, user, assignee, client,
             </div>
           </div>
         </div>
+      )}
+
+      {showAttachmentModal && (
+        <AttachmentModal
+          onClose={() => setShowAttachmentModal(false)}
+          onSubmit={handleAttachmentUpload}
+        />
       )}
     </>
   )

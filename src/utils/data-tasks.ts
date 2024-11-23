@@ -17,6 +17,16 @@ export interface Task {
   approvalStatus?: 'pending' | 'approved' | 'rejected'
   dependsOn?: string
   dueDate: string
+  attachments?: Attachment[]
+}
+
+export interface Attachment {
+  id: string
+  taskId: string
+  fileName: string
+  uploadedBy: string
+  uploadedAt: string
+  url: string
 }
 
 export interface Column {
