@@ -1,12 +1,16 @@
+import { UserRole } from '../../utils/auth-types';
+
 interface HeaderProps {
   title: string;
   userName: string;
+  userRole: UserRole;
   onLogout: () => void;
-  onCalendarClick?: () => void;
+  onCalendarClick: () => void;
+  onChatClick: () => void;
   children?: React.ReactNode;
 }
 
-export default function Header({ title, userName, onLogout, onCalendarClick, children }: HeaderProps) {
+export default function Header({ title, userName, userRole,onLogout, onCalendarClick, onChatClick, children }: HeaderProps) {
   return (
     <header className="bg-white shadow">
       <div className="px-4 py-6">
@@ -17,13 +21,22 @@ export default function Header({ title, userName, onLogout, onCalendarClick, chi
           </div>
           <div className="flex items-center gap-6">
             {children}
-            {onCalendarClick && (
+            {onCalendarClick && (userRole === 'team_member' || userRole === 'team_leader') && (
               <button
                 onClick={onCalendarClick}
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 
-                  bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  bg-blue-200 hover:bg-blue-300 rounded-md transition-colors"
               >
                 Calendar
+              </button>
+            )}
+            {onChatClick && (
+              <button
+                onClick={onChatClick}
+                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 
+                  bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              >
+                Chat
               </button>
             )}
             <button

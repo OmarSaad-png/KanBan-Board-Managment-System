@@ -3,6 +3,8 @@ import { Task } from '../../utils/data-tasks';
 import { User } from '../../utils/auth-types';
 import KanbanBoard from '../KanbanBoard';
 import Header from '../common/Header';
+import ChatWindow from '../chat/ChatWindow';
+import ChatList from '../chat/ChatList';
 
 interface ClientDashboardProps {
   user: User;
@@ -18,7 +20,15 @@ export default function ClientDashboard({
   onLogout 
 }: ClientDashboardProps) {
   const [tasks] = useState(initialTasks);
+  const [showChatList, setShowChatList] = useState(false);
+  const [currentChat, setCurrentChat] = useState<User | null>(null);
+  const [ws] = useState(() => new WebSocket('ws://localhost:3001'));
   
+  const handleChatSelect = (selectedUser: User) => {
+    setCurrentChat(selectedUser);
+    setShowChatList(false);
+  };
+
   const progress = Math.round((tasks.filter(t => t.status === 'done').length / tasks.length) * 100);
 
   return (
@@ -26,7 +36,10 @@ export default function ClientDashboard({
       <Header 
         title="Project Overview" 
         userName={user.name}
+        userRole={user.role}
         onLogout={onLogout}
+        onChatClick={() => setShowChatList(true)}
+        onCalendarClick={() => {}}
       >
         <div className="flex items-center gap-4">
           <div className="text-sm">
@@ -49,6 +62,24 @@ export default function ClientDashboard({
           onTaskUpdate={async () => {}} // Clients can't update tasks
         />
       </main>
+
+      {showChatList && (
+        <ChatList
+          currentUser={user}
+          users={users}
+          onSelectUser={handleChatSelect}
+          onClose={() => setShowChatList(false)}
+        />
+      )}
+
+      {currentChat && (
+        <ChatWindow
+          currentUser={user}
+          otherUser={currentChat}
+          onClose={() => setCurrentChat(null)}
+          ws={ws}
+        />
+      )}
     </div>
   );
 } 

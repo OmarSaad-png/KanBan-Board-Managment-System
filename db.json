@@ -78,7 +78,8 @@
       "assignee": "3",
       "clientId": "4",
       "createdBy": "1",
-      "dueDate": "2024-11-26"
+      "dueDate": "2024-11-26",
+      "dependsOn": "BUS-11"
     },
     {
       "id": "BUS-8",
@@ -126,7 +127,7 @@
       "assignee": "3",
       "clientId": "4",
       "createdBy": "1",
-      "completedAt": "2024-11-23T12:52:01.889Z",
+      "completedAt": "2024-11-23T20:57:51.507Z",
       "approvalStatus": "approved",
       "dueDate": "2024-12-07"
     },
@@ -250,6 +251,37 @@
       "points": 6,
       "completedAt": "2024-11-23T13:19:31.625Z",
       "approvedAt": "2024-11-23T13:19:44.473Z"
+    },
+    {
+      "id": "ccbb",
+      "userId": "3",
+      "taskId": "BUS-11",
+      "points": 1,
+      "completedAt": "2024-11-23T20:57:51.507Z",
+      "approvedAt": "2024-11-23T20:59:46.990Z"
+    }
+  ],
+  "messages": [
+    {
+      "id": "1",
+      "senderId": "1",
+      "receiverId": "2",
+      "content": "Hello",
+      "timestamp": "2024-03-14T12:00:00.000Z"
+    },
+    {
+      "id": "1732386992524",
+      "senderId": "2",
+      "receiverId": "1",
+      "content": "Hi",
+      "timestamp": "2024-11-23T18:36:32.524Z"
+    },
+    {
+      "id": "1732398244917",
+      "senderId": "3",
+      "receiverId": "1",
+      "content": "Good Morning!",
+      "timestamp": "2024-11-23T21:44:04.918Z"
     }
   ]
 }

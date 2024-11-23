@@ -8,6 +8,8 @@ import KPIDashboard from '../KPIDashboard';
 import { approveTaskWithKPI } from '../../utils/api';
 import { toast } from 'react-hot-toast';
 import CalendarModal from '../modals/CalendarModal';
+import ChatWindow from '../chat/ChatWindow';
+import ChatList from '../chat/ChatList';
 
 interface TeamLeaderDashboardProps {
   user: User;
@@ -31,6 +33,9 @@ export default function TeamLeaderDashboard({
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
   const [kpiRefreshCounter, setKpiRefreshCounter] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [showChatList, setShowChatList] = useState(false);
+  const [currentChat, setCurrentChat] = useState<User | null>(null);
+  const [ws] = useState(() => new WebSocket('ws://localhost:3001'));
 
   const teamMembers = users.filter(u => u.role === 'team_member');
   const clients = users.filter(u => u.role === 'client');
@@ -55,13 +60,20 @@ export default function TeamLeaderDashboard({
     });
   };
 
+  const handleChatSelect = (selectedUser: User) => {
+    setCurrentChat(selectedUser);
+    setShowChatList(false);
+  };
+
   return (
     <div className="flex flex-col h-screen">
       <Header 
         title="Team Leader Dashboard" 
         userName={user.name}
+        userRole={user.role}
         onLogout={onLogout}
         onCalendarClick={() => setShowCalendar(true)}
+        onChatClick={() => setShowChatList(true)}
       >
         <button
           onClick={() => setShowNewTaskModal(true)}
@@ -109,6 +121,24 @@ export default function TeamLeaderDashboard({
           tasks={tasks}
           user={user}
           users={users}
+        />
+      )}
+
+      {showChatList && (
+        <ChatList
+          currentUser={user}
+          users={users}
+          onSelectUser={handleChatSelect}
+          onClose={() => setShowChatList(false)}
+        />
+      )}
+
+      {currentChat && (
+        <ChatWindow
+          currentUser={user}
+          otherUser={currentChat}
+          onClose={() => setCurrentChat(null)}
+          ws={ws}
         />
       )}
     </div>

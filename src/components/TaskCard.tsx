@@ -111,6 +111,11 @@ const TaskCard = ({ task, onDelete, onApprove, onReject, user, assignee, client,
               Pending Approval
             </span>
           )}
+          {user.role === 'team_member' && task.approvalStatus === 'rejected' && (
+            <span className="px-2 py-1 rounded-full text-xs font-semibold animate-[flash-red_5s_ease-in-out] bg-red-100 text-red-800">
+              Rejected
+            </span>
+          )}
           <span 
             className={`
               px-2 py-1 rounded-full text-xs font-semibold
@@ -183,14 +188,23 @@ const TaskCard = ({ task, onDelete, onApprove, onReject, user, assignee, client,
         )}
 
         {/* Update the dependency info section */}
-        {task.dependsOn && (
-          <div className="mt-2 text-sm text-gray-500">
+        {task.dependsOn && (dependentTask?.status !== 'done' || dependentTask?.approvalStatus !== 'approved') && (
+          <div className="mt-2 text-sm text-red-600">
             Depends on: {task.dependsOn}
             {dependentTask && (
               <span className="ml-2">
-                {dependentTask.status === 'done' && dependentTask.approvalStatus === 'approved' 
-                  ? '(Completed)'
-                  : '(Waiting for dependent task completion)'}
+                {'(Waiting for dependent task completion)'}
+              </span>
+            )}
+          </div>
+        )}
+
+        {task.dependsOn && (dependentTask?.status === 'done' || dependentTask?.approvalStatus === 'approved') && (
+          <div className="mt-2 text-sm text-green-600">
+            Depends on: {task.dependsOn}
+            {dependentTask && (
+              <span className="ml-2">
+                {'(Completed)'}
               </span>
             )}
           </div>

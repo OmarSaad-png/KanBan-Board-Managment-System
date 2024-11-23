@@ -4,6 +4,7 @@ const API_BASE_URL = 'http://localhost:3000';
 import { Task } from './data-tasks';
 import { User } from './auth-types';
 import { KPIRecord } from './data-tasks';
+import { Message } from './message-types';
 
 const fetchWithTimeout = async (url: string, options: RequestInit = {}) => {
   const controller = new AbortController();
@@ -188,5 +189,43 @@ export async function approveTaskWithKPI(task: Task): Promise<{ task: Task; kpi:
     return { task: updatedTask, kpi: kpiRecord };
   } catch (error) {
     throw error;
+  }
+}
+
+export async function fetchChatHistory(userId1: string, userId2: string): Promise<Message[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/messages`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const messages: Message[] = await response.json();
+    
+    // Filter messages between these two users
+    return messages.filter(msg => 
+      (msg.senderId === userId1 && msg.receiverId === userId2) ||
+      (msg.senderId === userId2 && msg.receiverId === userId1)
+    );
+  } catch (error) {
+    throw new Error(`Failed to fetch chat history: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+export async function saveMessage(message: Message): Promise<Message> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return response.json();
+  } catch (error) {
+    throw new Error(`Failed to save message: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 } 
