@@ -8,6 +8,9 @@ export interface Task {
   status: Status
   priority: Priority
   points?: number
+  assignee?: string
+  clientId?: string
+  createdBy: string
 }
 
 export interface Column {

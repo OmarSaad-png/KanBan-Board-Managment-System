@@ -5,55 +5,137 @@
       "title": "Market research",
       "status": "done",
       "priority": "high",
-      "points": 8
+      "points": 8,
+      "assignee": "2",
+      "clientId": "4",
+      "createdBy": "1"
     },
     {
       "id": "BUS-2",
       "title": "Competitor analysis",
       "status": "done",
-      "priority": 5
+      "priority": "medium",
+      "points": 5,
+      "assignee": "2",
+      "clientId": "4",
+      "createdBy": "1"
     },
     {
       "id": "BUS-3",
       "title": "Develop business strategy",
-      "status": "in-progress",
+      "status": "todo",
       "priority": "high",
-      "points": 3
+      "points": 3,
+      "assignee": "3",
+      "clientId": "4",
+      "createdBy": "1"
     },
     {
       "id": "BUS-4",
       "title": "Identify potential partners",
-      "status": "todo",
+      "status": "in-progress",
       "priority": "medium",
-      "points": 2
+      "points": 2,
+      "assignee": "2",
+      "clientId": "5",
+      "createdBy": "1"
     },
     {
       "id": "BUS-5",
       "title": "Negotiate partnerships",
       "status": "in-progress",
       "priority": "low",
-      "points": 1
+      "points": 1,
+      "assignee": "3",
+      "clientId": "5",
+      "createdBy": "1"
     },
     {
       "id": "BUS-6",
       "title": "Develop marketing plan",
       "status": "todo",
       "priority": "high",
-      "points": 13
+      "points": 13,
+      "assignee": "2",
+      "clientId": "4",
+      "createdBy": "1"
     },
     {
       "id": "BUS-7",
       "title": "Implement marketing plan",
       "status": "todo",
       "priority": "high",
-      "points": 8
+      "points": 8,
+      "assignee": "3",
+      "clientId": "4",
+      "createdBy": "1"
     },
     {
       "id": "BUS-8",
       "title": "Evaluate business performance",
-      "status": "done",
+      "status": "in-progress",
       "priority": "medium",
-      "points": 3
+      "points": 3,
+      "assignee": "2",
+      "clientId": "5",
+      "createdBy": "1"
+    },
+    {
+      "id": "f86a",
+      "title": "teeeeeeeeeeeeeeeesttttttttt",
+      "priority": "medium",
+      "points": 1,
+      "status": "in-progress",
+      "assignee": "2",
+      "clientId": "5",
+      "createdBy": "1"
+    },
+    {
+      "id": "852d",
+      "title": "hgfghfghv",
+      "priority": "medium",
+      "points": 13,
+      "status": "todo",
+      "assignee": "2",
+      "clientId": "4",
+      "createdBy": "1"
+    }
+  ],
+  "users": [
+    {
+      "id": "1",
+      "username": "teamlead1",
+      "password": "leader123",
+      "role": "team_leader",
+      "name": "John Leader"
+    },
+    {
+      "id": "2",
+      "username": "member1",
+      "password": "member123",
+      "role": "team_member",
+      "name": "Alice Member"
+    },
+    {
+      "id": "3",
+      "username": "member2",
+      "password": "member123",
+      "role": "team_member",
+      "name": "Bob Member"
+    },
+    {
+      "id": "4",
+      "username": "client1",
+      "password": "client123",
+      "role": "client",
+      "name": "Carol Client"
+    },
+    {
+      "id": "5",
+      "username": "client2",
+      "password": "client123",
+      "role": "client",
+      "name": "David Client"
     }
   ]
 }

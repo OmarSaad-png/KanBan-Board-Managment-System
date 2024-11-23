@@ -1,87 +1,101 @@
-import { useCallback, useEffect, useState } from 'react'
-import TaskCard from './components/TaskCard'
-import { Status, statuses, Task, Column } from './utils/data-tasks'
-import { fetchTasks, updateTaskAPI } from './utils/api'
+import { useState, useEffect } from 'react';
+import Login from './components/Login';
+import TeamLeaderDashboard from './components/dashboards/TeamLeaderDashboard';
+import TeamMemberDashboard from './components/dashboards/TeamMemberDashboard';
+import ClientDashboard from './components/dashboards/ClientDashboard';
+import { User } from './utils/auth-types';
+import { Task } from './utils/data-tasks';
+import { fetchTasks, fetchUsers } from './utils/api';
+import Loading from './components/common/Loading';
 
 function App() {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [currentlyHoveringOver, setCurrentlyHoveringOver] = useState<Status | null>(null)
-
-  const columns: Column[] = statuses.map((status) => ({
-    status,
-    tasks: tasks.filter((task) => task.status === status)
-  }))
+  const [user, setUser] = useState<User | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadTasks = async () => {
+    const loadInitialData = async () => {
+      setIsLoading(true);
       try {
-        const data = await fetchTasks()
-        setTasks(data)
+        const [tasksData, usersData] = await Promise.all([
+          fetchTasks(),
+          fetchUsers()
+        ]);
+        setTasks(tasksData);
+        setUsers(usersData);
       } catch (err) {
-        setError('Failed to load tasks')
+        setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
-    loadTasks()
-  }, [])
+    };
 
-  const updateTask = useCallback(async (task: Task) => {
-    try {
-      await updateTaskAPI(task)
-      setTasks(prev => prev.map(t => t.id === task.id ? task : t))
-    } catch (err) {
-      setError('Failed to update task')
-    }
-  }, [])
+    loadInitialData();
+  }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent<HTMLElement>, status: Status) => {
-    e.preventDefault()
-    setCurrentlyHoveringOver(null)
-    const id = e.dataTransfer.getData("id")
-    const task = tasks.find((task) => task.id === id)
-    if(task) {
-      updateTask({...task, status})
-    }
-  }, [tasks, updateTask])
+  const handleLogout = () => {
+    setUser(null);
+  };
 
-  if (isLoading) return <div className="flex justify-center p-8">Loading...</div>
-  if (error) return <div className="flex justify-center p-8 text-red-500">{error}</div>
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loading />
+      </div>
+    );
+  }
 
-  return (
-    <main className="flex divide-x min-h-screen">
-      {columns.map((column) => (
-        <section
-          key={column.status}
-          className="flex-1 p-4"
-          onDrop={(e) => handleDrop(e, column.status)}
-          onDragOver={(e) => e.preventDefault()}
-          onDragEnter={() => setCurrentlyHoveringOver(column.status)}
-          aria-label={`${column.status} tasks`}
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <div className="text-red-500 text-lg mb-4">Error: {error}</div>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
-          <div className="flex justify-between text-3xl p-2 font-bold text-gray-500">
-            <h2 className="capitalize">{column.status}</h2>
-            <span>{column.tasks.reduce((total, task) => total + (task?.points || 0), 0)}</span>
-          </div>
-          <div 
-            className={`min-h-[200px] rounded-lg transition-colors ${
-              currentlyHoveringOver === column.status ? 'bg-gray-100' : ''
-            }`}
-          >
-            {column.tasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                updateTask={updateTask}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
-    </main>
-  )
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login onLogin={setUser} />;
+  }
+
+  switch (user.role) {
+    case 'team_leader':
+      return (
+        <TeamLeaderDashboard 
+          user={user} 
+          tasks={tasks} 
+          users={users}
+          onLogout={handleLogout}
+        />
+      );
+    case 'team_member':
+      return (
+        <TeamMemberDashboard 
+          user={user} 
+          tasks={tasks.filter(t => t.assignee === user.id)}
+          users={users}
+          onLogout={handleLogout} 
+        />
+      );
+    case 'client':
+      return (
+        <ClientDashboard 
+          user={user} 
+          tasks={tasks.filter(t => t.clientId === user.id)}
+          users={users}
+          onLogout={handleLogout} 
+        />
+      );
+    default:
+      return <div>Invalid role</div>;
+  }
 }
 
-export default App
+export default App;
