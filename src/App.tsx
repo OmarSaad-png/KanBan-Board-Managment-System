@@ -5,7 +5,7 @@ import TeamMemberDashboard from './components/dashboards/TeamMemberDashboard';
 import ClientDashboard from './components/dashboards/ClientDashboard';
 import { User } from './utils/auth-types';
 import { Task } from './utils/data-tasks';
-import { fetchTasks, fetchUsers } from './utils/api';
+import { fetchTasks, fetchUsers, updateTaskAPI, createTask, deleteTask } from './utils/api';
 import Loading from './components/common/Loading';
 
 function App() {
@@ -14,6 +14,15 @@ function App() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const loadTasks = async () => {
+    try {
+      const tasksData = await fetchTasks();
+      setTasks(tasksData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load tasks');
+    }
+  };
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -34,6 +43,35 @@ function App() {
 
     loadInitialData();
   }, []);
+
+  const handleTaskUpdate = async (updatedTask: Task) => {
+    try {
+      await updateTaskAPI(updatedTask);
+      setTasks(prevTasks => 
+        prevTasks.map(task => task.id === updatedTask.id ? updatedTask : task)
+      );
+    } catch (error) {
+      console.error('Failed to update task:', error);
+    }
+  };
+
+  const handleTaskCreate = async (newTask: Omit<Task, 'id'>) => {
+    try {
+      const createdTask = await createTask(newTask);
+      setTasks(prevTasks => [...prevTasks, createdTask]);
+    } catch (error) {
+      console.error('Failed to create task:', error);
+    }
+  };
+
+  const handleTaskDelete = async (taskId: string) => {
+    try {
+      await deleteTask(taskId);
+      setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+    }
+  };
 
   const handleLogout = () => {
     setUser(null);
@@ -73,6 +111,9 @@ function App() {
           tasks={tasks} 
           users={users}
           onLogout={handleLogout}
+          onTaskUpdate={handleTaskUpdate}
+          onTaskCreate={handleTaskCreate}
+          onTaskDelete={handleTaskDelete}
         />
       );
     case 'team_member':
@@ -81,7 +122,8 @@ function App() {
           user={user} 
           tasks={tasks.filter(t => t.assignee === user.id)}
           users={users}
-          onLogout={handleLogout} 
+          onLogout={handleLogout}
+          onTaskUpdate={handleTaskUpdate}
         />
       );
     case 'client':

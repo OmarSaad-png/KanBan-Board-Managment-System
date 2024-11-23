@@ -17,8 +17,15 @@ export default function Login({ onLogin }: LoginProps) {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/users');
-      if (!response.ok) throw new Error('Failed to authenticate');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      const response = await fetch('http://localhost:3000/users', {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       
       const users: User[] = await response.json();
       const user = users.find(
@@ -31,7 +38,7 @@ export default function Login({ onLogin }: LoginProps) {
         setError('Invalid username or password');
       }
     } catch (err) {
-      setError('Authentication failed. Please try again.');
+      setError(err instanceof Error ? err.message : 'Authentication failed');
     } finally {
       setIsLoading(false);
     }

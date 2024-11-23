@@ -3,37 +3,45 @@ const API_BASE_URL = 'http://localhost:3000';
 
 import { Task } from './data-tasks';
 import { User } from './auth-types';
+import { KPIRecord } from './data-tasks';
+import { CalendarEvent } from './calendar-types';
 
-export async function fetchTasks(): Promise<Task[]> {
+const fetchWithTimeout = async (url: string, options: RequestInit = {}) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+
   try {
-    const response = await fetch(`${API_BASE_URL}/tasks`);
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
+
     return response.json();
   } catch (error) {
-    throw new Error(`Failed to fetch tasks: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    if (error instanceof Error) {
+      throw new Error(`API Error: ${error.message}`);
+    }
+    throw new Error('Unknown API error occurred');
   }
+};
+
+export async function fetchTasks(): Promise<Task[]> {
+  return fetchWithTimeout(`${API_BASE_URL}/tasks`);
 }
 
 export async function updateTaskAPI(task: Task): Promise<Task> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/tasks/${task.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(task),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    return response.json();
-  } catch (error) {
-    throw new Error(`Failed to update task: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
+  return fetchWithTimeout(`${API_BASE_URL}/tasks/${task.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(task),
+  });
 }
 
 export async function createTask(taskData: Omit<Task, 'id'>): Promise<Task> {
@@ -81,4 +89,60 @@ export async function deleteTask(taskId: string): Promise<void> {
   } catch (error) {
     throw new Error(`Failed to delete task: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
+}
+
+export async function fetchKPIRecords(): Promise<KPIRecord[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/kpi`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  } catch (error) {
+    throw new Error(`Failed to fetch KPI records: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+export async function addKPIRecord(record: Omit<KPIRecord, 'id'>): Promise<KPIRecord> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/kpi`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(record),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return response.json();
+  } catch (error) {
+    throw new Error(`Failed to add KPI record: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+export async function fetchCalendarEvents(): Promise<CalendarEvent[]> {
+  return fetchWithTimeout(`${API_BASE_URL}/calendar-events`);
+}
+
+export async function createCalendarEvent(event: Omit<CalendarEvent, 'id'>): Promise<CalendarEvent> {
+  return fetchWithTimeout(`${API_BASE_URL}/calendar-events`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(event),
+  });
+}
+
+export async function updateCalendarEvent(event: CalendarEvent): Promise<CalendarEvent> {
+  return fetchWithTimeout(`${API_BASE_URL}/calendar-events/${event.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(event),
+  });
 } 

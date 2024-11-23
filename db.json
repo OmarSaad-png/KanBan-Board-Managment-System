@@ -2,10 +2,10 @@
   "tasks": [
     {
       "id": "BUS-1",
-      "title": "Market research",
-      "status": "done",
-      "priority": "high",
-      "points": 8,
+      "title": "Research market trends",
+      "status": "todo",
+      "priority": "low",
+      "points": 1,
       "assignee": "2",
       "clientId": "4",
       "createdBy": "1"
@@ -13,12 +13,13 @@
     {
       "id": "BUS-2",
       "title": "Competitor analysis",
-      "status": "done",
+      "status": "in-progress",
       "priority": "medium",
       "points": 5,
       "assignee": "2",
       "clientId": "4",
-      "createdBy": "1"
+      "createdBy": "1",
+      "completedAt": "2024-11-23T01:15:00.711Z"
     },
     {
       "id": "BUS-3",
@@ -33,7 +34,7 @@
     {
       "id": "BUS-4",
       "title": "Identify potential partners",
-      "status": "in-progress",
+      "status": "todo",
       "priority": "medium",
       "points": 2,
       "assignee": "2",
@@ -81,24 +82,16 @@
       "createdBy": "1"
     },
     {
-      "id": "f86a",
-      "title": "teeeeeeeeeeeeeeeesttttttttt",
+      "id": "7c7c",
+      "title": "test",
       "priority": "medium",
-      "points": 1,
-      "status": "in-progress",
-      "assignee": "2",
-      "clientId": "5",
-      "createdBy": "1"
-    },
-    {
-      "id": "852d",
-      "title": "hgfghfghv",
-      "priority": "medium",
-      "points": 13,
-      "status": "todo",
-      "assignee": "2",
+      "points": 8,
+      "status": "done",
+      "assignee": "3",
       "clientId": "4",
-      "createdBy": "1"
+      "createdBy": "1",
+      "completedAt": "2024-11-23T10:05:11.719Z",
+      "approvalStatus": "approved"
     }
   ],
   "users": [
@@ -114,14 +107,14 @@
       "username": "member1",
       "password": "member123",
       "role": "team_member",
-      "name": "Alice Member"
+      "name": "Alice"
     },
     {
       "id": "3",
       "username": "member2",
       "password": "member123",
       "role": "team_member",
-      "name": "Bob Member"
+      "name": "Bob"
     },
     {
       "id": "4",
@@ -136,6 +129,24 @@
       "password": "client123",
       "role": "client",
       "name": "David Client"
+    }
+  ],
+  "kpi": [
+    {
+      "id": "1",
+      "userId": "2",
+      "taskId": null,
+      "points": 8,
+      "completedAt": "2024-03-20T10:00:00Z",
+      "approvedAt": "2024-03-20T11:00:00Z"
+    },
+    {
+      "id": "de81",
+      "userId": "2",
+      "taskId": null,
+      "points": 8,
+      "completedAt": "2024-11-23T01:15:24.754Z",
+      "approvedAt": "2024-11-23T01:15:52.486Z"
     }
   ]
 }

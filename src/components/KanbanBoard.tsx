@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { Task, Status, statuses } from '../utils/data-tasks';
-import TaskCard from './TaskCard';
+import { Task, Status, statuses, leaderStatuses } from '../utils/data-tasks';
 import { User } from '../utils/auth-types';
+import TaskCard from './TaskCard';
 
 interface KanbanBoardProps {
   tasks: Task[];
   user: User;
   users: User[];
   onTaskUpdate: (task: Task) => Promise<void>;
-  onDeleteTask?: (taskId: string) => Promise<void>;
+  onTaskApprove?: (task: Task) => Promise<void>;
+  onTaskReject?: (task: Task) => Promise<void>;
 }
 
 export default function KanbanBoard({ 
@@ -16,9 +17,13 @@ export default function KanbanBoard({
   user, 
   users, 
   onTaskUpdate,
-  onDeleteTask 
+  onTaskApprove,
+  onTaskReject
 }: KanbanBoardProps) {
   const [draggingOver, setDraggingOver] = useState<Status | null>(null);
+
+  // Use different status arrays based on user role
+  const visibleStatuses = user.role === 'team_leader' ? leaderStatuses : statuses;
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -31,18 +36,34 @@ export default function KanbanBoard({
     const taskId = e.dataTransfer.getData('id');
     const task = tasks.find(t => t.id === taskId);
     
-    if (task && task.status !== status) {
-      const updatedTask = { ...task, status };
-      try {
-        await onTaskUpdate(updatedTask);
-      } catch (error) {
-        console.error('Failed to update task:', error);
-      }
+    if (!task || task.status === status) return;
+    
+    try {
+      const updatedTask = { 
+        ...task, 
+        status: user.role === 'team_member' && status === 'done' ? 'pending' : status,
+        completedAt: status === 'done' ? new Date().toISOString() : task.completedAt
+      };
+
+      await onTaskUpdate(updatedTask);
+    } catch (error) {
+      console.error('Failed to update task:', error);
     }
     setDraggingOver(null);
   };
 
-  const getColumnTasks = (status: Status) => tasks.filter(task => task.status === status);
+  const getColumnTasks = (status: Status) => {
+    // For team members, show 'pending' tasks as 'done'
+    if (user.role !== 'team_leader') {
+      if (status === 'done') {
+        return tasks.filter(task => 
+          task.status === 'done' || task.status === 'pending'
+        );
+      }
+      return tasks.filter(task => task.status === status);
+    }
+    return tasks.filter(task => task.status === status);
+  };
 
   const findUser = (userId?: string) => {
     if (!userId) return undefined;
@@ -51,7 +72,7 @@ export default function KanbanBoard({
 
   return (
     <div className="flex flex-1 gap-4 p-4 overflow-x-auto">
-      {statuses.map(status => (
+      {visibleStatuses.map(status => (
         <div
           key={status}
           className={`flex-1 min-w-[300px] bg-gray-100 rounded-lg p-4
@@ -75,7 +96,9 @@ export default function KanbanBoard({
                 key={task.id}
                 task={task}
                 user={user}
-                onDelete={onDeleteTask}
+                onTaskUpdate={onTaskUpdate}
+                onApprove={onTaskApprove}
+                onReject={onTaskReject}
                 assignee={findUser(task.assignee)}
                 client={findUser(task.clientId)}
               />

@@ -10,26 +10,17 @@ interface TeamMemberDashboardProps {
   tasks: Task[];
   users: User[];
   onLogout: () => void;
+  onTaskUpdate: (task: Task) => Promise<void>;
 }
 
 export default function TeamMemberDashboard({ 
   user, 
   tasks: initialTasks, 
   users,
-  onLogout 
+  onLogout,
+  onTaskUpdate 
 }: TeamMemberDashboardProps) {
-  const [tasks, setTasks] = useState(initialTasks);
-
-  const handleTaskUpdate = async (updatedTask: Task) => {
-    try {
-      await updateTaskAPI(updatedTask);
-      setTasks(tasks.map(task => 
-        task.id === updatedTask.id ? updatedTask : task
-      ));
-    } catch (error) {
-      console.error('Failed to update task:', error);
-    }
-  };
+  const [tasks] = useState(initialTasks);
 
   return (
     <div className="flex flex-col h-screen">
@@ -51,9 +42,9 @@ export default function TeamMemberDashboard({
           tasks={tasks} 
           user={user}
           users={users}
-          onTaskUpdate={handleTaskUpdate}
+          onTaskUpdate={onTaskUpdate}
         />
       </main>
     </div>
   );
-}
+} 

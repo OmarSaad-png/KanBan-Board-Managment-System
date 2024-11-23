@@ -4,10 +4,13 @@ import { User } from '../utils/auth-types'
 
 interface TaskCardProps {
   task: Task
-  user?: User
   onDelete?: (taskId: string) => Promise<void>
+  user: User
   assignee?: User
   client?: User
+  onTaskUpdate: (task: Task) => Promise<void>;
+  onApprove?: (task: Task) => Promise<void>;
+  onReject?: (task: Task) => Promise<void>;
 }
 
 const priorityColors = {
@@ -16,32 +19,42 @@ const priorityColors = {
   high: 'bg-red-100 text-red-800',
 } as const
 
-const TaskCard = ({ task, onDelete, user, assignee, client }: TaskCardProps) => {
+const TaskCard = ({ task, onTaskUpdate, onApprove, onReject, user, assignee, client }: TaskCardProps) => {
   const [isDragging, setIsDragging] = useState(false)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isUpdating, setIsUpdating] = useState(false)
 
-  const canDrag = user?.role !== 'client'
-  const canDelete = user?.role === 'team_leader' || task.createdBy === user?.id
+  // Only team members can drag their own tasks
+  const canDrag = user.role === 'team_member' && task.assignee === user.id;
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
-    if (!canDrag) return
-    e.dataTransfer.setData('id', task.id)
-    setIsDragging(true)
+    if (isUpdating || !canDrag) return;
+    e.dataTransfer.setData('id', task.id);
+    setIsDragging(true);
   }
 
   const handleDragEnd = () => {
     setIsDragging(false)
   }
 
-  const handleDelete = async () => {
-    if (onDelete) {
+  const handleApprove = async () => {
+    if (onApprove) {
       try {
-        await onDelete(task.id)
+        await onApprove(task);
       } catch (error) {
-        console.error('Failed to delete task:', error)
+        console.error('Failed to approve task:', error);
       }
     }
-  }
+  };
+
+  const handleReject = async () => {
+    if (onReject) {
+      try {
+        await onReject(task);
+      } catch (error) {
+        console.error('Failed to reject task:', error);
+      }
+    }
+  };
 
   return (
     <div
@@ -50,9 +63,9 @@ const TaskCard = ({ task, onDelete, user, assignee, client }: TaskCardProps) => 
       onDragEnd={handleDragEnd}
       className={`
         p-4 mb-3 rounded-lg shadow-sm border border-gray-200
-        bg-white ${canDrag ? 'cursor-move' : 'cursor-default'} transition-all
-        hover:shadow-md relative
+        bg-white ${canDrag ? 'cursor-move' : 'cursor-default'} 
         ${isDragging ? 'opacity-50' : 'opacity-100'}
+        hover:shadow-md
       `}
       role="article"
       aria-label={`Task: ${task.title}`}
@@ -97,35 +110,27 @@ const TaskCard = ({ task, onDelete, user, assignee, client }: TaskCardProps) => 
             {task.points}
           </span>
         )}
-        
-        {canDelete && (
-          <div className="relative">
-            {!showDeleteConfirm ? (
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="text-red-500 hover:text-red-700 text-sm"
-              >
-                Delete
-              </button>
-            ) : (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleDelete}
-                  className="text-red-500 hover:text-red-700 text-sm font-semibold"
-                >
-                  Confirm
-                </button>
-                <button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="text-gray-500 hover:text-gray-700 text-sm"
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
-          </div>
-        )}
       </div>
+
+      {/* Show approval buttons only for team leader and pending tasks */}
+      {user.role === 'team_leader' && task.status === 'pending' && (
+        <div className="flex gap-2 mt-3 border-t pt-3">
+          <button
+            onClick={handleApprove}
+            className="flex-1 px-3 py-1 bg-green-500 text-white rounded-md 
+              hover:bg-green-600 text-sm font-medium transition-colors"
+          >
+            Approve
+          </button>
+          <button
+            onClick={handleReject}
+            className="flex-1 px-3 py-1 bg-red-500 text-white rounded-md 
+              hover:bg-red-600 text-sm font-medium transition-colors"
+          >
+            Reject
+          </button>
+        </div>
+      )}
     </div>
   )
 }
