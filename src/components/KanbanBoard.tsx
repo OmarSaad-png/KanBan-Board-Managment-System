@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Task, Status, leaderStatuses, memberStatuses } from '../utils/data-tasks';
+import { Task, Status, leaderStatuses, memberStatuses, clientStatuses } from '../utils/data-tasks';
 import { User } from '../utils/auth-types';
 import TaskCard from './TaskCard';
 import { Priority } from '../utils/data-tasks';
@@ -33,7 +33,11 @@ export default function KanbanBoard({
   }, [initialTasks]);
 
   // Use different status arrays based on user role
-  const visibleStatuses = user.role === 'team_leader' ? leaderStatuses : memberStatuses;
+  const visibleStatuses = user.role === 'team_leader' 
+    ? leaderStatuses 
+    : user.role === 'client'
+      ? clientStatuses
+      : memberStatuses;
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -94,28 +98,28 @@ export default function KanbanBoard({
   };
 
   const getTasksForStatus = useCallback((status: Status): Task[] => {
-    let filteredTasks = user.role === 'team_leader' 
-      ? tasks.filter(task => task.status === status)
-      : tasks.filter(task => 
-          task.assignee === user.id && 
-          task.status === status
-        );
-
-    // Sort tasks: rejected first, then by priority (high > medium > low)
-    return filteredTasks.sort((a, b) => {
-      // If one task is rejected and the other isn't, rejected goes first
-      if (a.approvalStatus === 'rejected' && b.approvalStatus !== 'rejected') return -1;
-      if (b.approvalStatus === 'rejected' && a.approvalStatus !== 'rejected') return 1;
-      
-      // Otherwise sort by priority using type-safe priority mapping
-      const priorityOrder: Record<Priority, number> = {
-        high: 3,
-        medium: 2,
-        low: 1
-      };
-      
-      return priorityOrder[b.priority] - priorityOrder[a.priority];
-    });
+    let filteredTasks = tasks;
+    
+    if (user.role === 'team_member') {
+      filteredTasks = tasks.filter(task => task.assignee === user.id);
+    } else if (user.role === 'client') {
+      filteredTasks = tasks.filter(task => task.clientId === user.id);
+    }
+    
+    return filteredTasks
+      .filter(task => task.status === status)
+      .sort((a, b) => {
+        if (a.approvalStatus === 'rejected' && b.approvalStatus !== 'rejected') return -1;
+        if (b.approvalStatus === 'rejected' && a.approvalStatus !== 'rejected') return 1;
+        
+        const priorityOrder: Record<Priority, number> = {
+          high: 3,
+          medium: 2,
+          low: 1
+        };
+        
+        return priorityOrder[b.priority] - priorityOrder[a.priority];
+      });
   }, [tasks, user.role, user.id]);
 
   const findUser = useCallback((userId?: string) => {

@@ -3,6 +3,7 @@ export type Priority = 'low' | 'medium' | 'high'
 export const statuses: Status[] = ['todo', 'in-progress', 'done', 'pending']
 export const leaderStatuses: Status[] = ['todo', 'in-progress', 'done', 'pending']
 export const memberStatuses: Status[] = ['todo', 'in-progress', 'done']
+export const clientStatuses: Status[] = ['todo', 'in-progress', 'pending', 'done']
 
 export interface Task {
   id: string

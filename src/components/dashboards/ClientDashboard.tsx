@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Task } from '../../utils/data-tasks';
 import { User } from '../../utils/auth-types';
 import KanbanBoard from '../KanbanBoard';
@@ -19,17 +19,25 @@ export default function ClientDashboard({
   users,
   onLogout 
 }: ClientDashboardProps) {
-  const [tasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [showChatList, setShowChatList] = useState(false);
   const [currentChat, setCurrentChat] = useState<User | null>(null);
   const [ws] = useState(() => new WebSocket('ws://localhost:3001'));
   
+  useEffect(() => {
+    setTasks(initialTasks);
+  }, [initialTasks]);
+
   const handleChatSelect = (selectedUser: User) => {
     setCurrentChat(selectedUser);
     setShowChatList(false);
   };
 
-  const progress = Math.round((tasks.filter(t => t.status === 'done').length / tasks.length) * 100);
+  const progress = Math.round(
+    (tasks.filter(t => t.status === 'done' && t.approvalStatus === 'approved').length / tasks.length) * 100
+  );
+
+  console.log('Tasks for client:', tasks);
 
   return (
     <div className="flex flex-col h-screen">

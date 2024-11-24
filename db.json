@@ -3,7 +3,7 @@
     {
       "id": "BUS-1",
       "title": "Research market trends",
-      "status": "todo",
+      "status": "in-progress",
       "priority": "low",
       "points": 1,
       "assignee": "2",
@@ -59,13 +59,13 @@
     {
       "id": "BUS-6",
       "title": "Develop marketing plan",
-      "status": "in-progress",
+      "status": "pending",
       "priority": "high",
       "points": 13,
       "assignee": "2",
       "clientId": "4",
       "createdBy": "1",
-      "completedAt": "2024-11-23T15:13:58.917Z",
+      "completedAt": "2024-11-29T08:14:34.870Z",
       "approvalStatus": "rejected",
       "dueDate": "2024-11-30"
     },
@@ -85,7 +85,7 @@
     {
       "id": "BUS-8",
       "title": "Evaluate business performance",
-      "status": "in-progress",
+      "status": "todo",
       "priority": "medium",
       "points": 3,
       "assignee": "2",
