@@ -27,7 +27,7 @@ A modern task management system built with React, TypeScript, and WebSocket for 
 
 ```bash
 git clone https://github.com/OmarSaad-png/KanBan-Board-Managment-System
-cd react-intro-kanban
+cd [File Dest]
 ```
 
 2. Install dependencies:
