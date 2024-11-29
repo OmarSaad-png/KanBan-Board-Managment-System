@@ -26,8 +26,8 @@ A modern task management system built with React, TypeScript, and WebSocket for 
 1. Clone the repository:
 
 ```bash
-git clone [your-repo-url]
-cd react-intro-kanban
+git clone https://github.com/OmarSaad-png/KanBan-Board-Managment-System
+cd [File Dest]
 ```
 
 2. Install dependencies:
@@ -96,7 +96,3 @@ src/
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
